@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<link href="style.css" rel="stylesheet">
+	<title>Website of Christopher Chase</title>
+</head>
+
+<style>
+	body {
+		background-color: #f2f2f2;
+		
+		font-size: 1.2rem;
+	}
+
+	pre {
+		padding: 20px;
+		background-color: #FFFFDE;
+		overflow-x: auto;
+	}
+
+
+	section {
+		border: 1px solid #ccc;
+		padding: 10px;
+		width: 70%;
+		margin: 0 auto;
+		background-color: #fff;
+		margin-bottom: 20px;
+		filter: drop-shadow(10px 10px 4px #ccc);
+	}
+
+	details>summary {
+		font-size: 1.4rem;
+	}
+</style>
+
+<script>
+
+	function collapseAll(e) {
+		let posts = document.getElementsByTagName("details");
+		for (i = 0; i < posts.length; i++) {
+			posts[i].removeAttribute("open");
+		}
+	}
+
+	function expandAll(e) {
+		let posts = document.getElementsByTagName("details");
+		for (i = 0; i < posts.length; i++) {
+			posts[i].setAttribute("open", "");
+		}
+	}
+
+	function expandFirst() {
+		let posts = document.getElementsByTagName("details");
+		posts[0].setAttribute("open", "");
+	}
+
+	function expandByPostId(id) {
+		let post = document.getElementById(id);
+
+		if (!post) {
+			expandFirst();
+		}
+
+		post.setAttribute("open", "");
+		post.scrollIntoView();
+	}
+
+	/*
+	This function iterates over each <section> tagged with a "post" class.
+	
+	For each post that is found, it generates a <details> and <summary> element
+	which provides a nice expand-collapse functionality.
+	
+	The <summary> contents are set to the same contents as the first H1 found in the post.
+	Any child elements originally in the section are then placed within the <details> after
+	the <summary>.
+	
+	*/
+	function setSummaryTitles() {
+		let posts = document.getElementsByClassName("post");
+
+		for (let postIdx = 0; postIdx < posts.length; postIdx++) {
+
+			// For each blog post, use the first H1 contents as the <summary> value
+			let details = document.createElement("details");
+			let summary = document.createElement("summary");
+			let postH1 = posts[postIdx].getElementsByTagName("h1")[0];
+
+			let time = posts[postIdx].getElementsByTagName("time")[0];
+
+			let summaryText = "";
+			if (time) {
+				summaryText += time.innerText + " &ndash; ";
+			}
+
+			summaryText += postH1.innerText
+
+			summary.innerHTML = summaryText;
+
+			details.appendChild(summary);
+
+			let children = posts[postIdx].children;
+
+			while (children.length != 0) {
+				details.appendChild(posts[postIdx].children[0])
+			}
+
+			posts[postIdx].appendChild(details);
+
+		}
+
+	}
+
+	function generateAnchors() {
+		let posts = document.getElementsByClassName("post");
+
+		for (let postIdx = 0; postIdx < posts.length; postIdx++) {
+			let postDeets = posts[postIdx].getElementsByTagName("details")[0];
+			postDeets.id = postDeets.innerText.replaceAll(/\W+/g, "_");
+
+			let postH1 = posts[postIdx].getElementsByTagName("h1")[0];
+
+			let postHref = document.createElement("a");
+			postHref.setAttribute("href", "#" + postDeets.id);
+
+			let prev = postH1.previousSibling;
+
+			postHref.appendChild(postH1);
+
+			prev.after(postHref);
+
+		}
+	}
+
+	function filterPosts() {
+
+		// get the contents of the input
+		let searchContents = document.getElementById("post_filter").value.toLowerCase();
+	
+		
+		if (searchContents.length > 0) {
+			let posts = document.getElementsByClassName("post");
+			for (i = 0; i < posts.length; i++) {
+				let post_content = posts[i].innerHTML.toLowerCase();
+				if (post_content.search(searchContents) < 0) {
+					posts[i].closest("section").setAttribute("hidden", "");
+				}
+			}
+		} else {
+			let sections = document.getElementsByTagName("section")
+			for (i = 0; i < sections.length; i++) {
+				sections[i].removeAttribute("hidden");
+			}
+		}
+	}
+
+	function clearFilter() {
+		document.getElementById("post_filter").value = "";
+		filterPosts();
+	}
+
+	function ready() {
+		setSummaryTitles();
+		generateAnchors();
+
+		/*
+		If a fragment is specified in the url, i.e.
+			 index.html#<some-fragment>
+		We scroll to that fragment and expand the post.
+		*/
+		let href = window.location.href;
+
+		if (href.indexOf("#") > 0) {
+			let postId = href.substr(href.indexOf("#") + 1);
+			expandByPostId(postId);
+		} else {
+			expandFirst();
+		}
+
+
+	}
+
+	document.addEventListener("DOMContentLoaded", ready);
+
+</script>
+
+<body>
+
+	<section>
+		<img src="img/chris.jpg" style="float: right; margin-left: 50px;" width="200px">
+		<p>Hi, I'm Christopher Chase; welcome to my website!</p>
+		<p>I'm a software engineer with a decade's worth of professional experience across the Health,
+			Supply Chain, AdTech, Energy/IoT devices, Food & Beverage, and Consulting industries.</p>
+		<p>On this site you'll find posts about various projects or interests I have.</p>
+
+		<p><br>This site itself is a single page HTML file that uses a small amount of Javascript to provide some
+			convenience for both me as the author and you as the reader. Directly below this, you'll find some tools
+			to help you better navigate the various posts.</p>
+	</section>
+
+	<section>
+		<button onclick="collapseAll()">Collapse All Posts</button>
+		<button onclick="expandAll()">Expand All Posts</button>
+		<p><label for="post_filter">Search by post content </label><input id="post_filter" type="text" oninput="filterPosts()">
+		<button onclick="clearFilter()">Clear</button></p>
+	</section>
+
+
+
+	<!--
+		Blog post template
+
+
+		<section class="post">
+			<h1></h1>
+			<p>Posted on <time></time></p>
+		</section>
+
+
+	-->
+
+
+	<section class="post">
+		<h1>Designing a new website</h1>
+		<p>Posted on <time>2021-12-18</time></p>
+		<p>
+			I last went through a website redesign back in December 2015. At the time, I had just heard about
+			Asciidoctor,
+			and I was still heavily playing around with the Perl language.</p>
+		<p>To add a new page to my site, I'd type it up in Asciidoctor,
+			use some magical <code>include</code>s to get the common page header added, and then recompile the whole
+			site using a Perl script.
+			At the time, I thought this was really cool, but after 6 years and rarely (i.e. never) adding new content,
+			my custom tooling became a hinderance:
+			after years of not using it, I had forgotten how everything worked.
+		</p>
+		<p>For my new site I knew that at the end of the day I wanted simplicity above all else:
+		<ul>
+			<li>No compilation or assembly steps, just plain old HTML.</li>
+			<li>A single file is sufficient. I'm not too worried about file size as modern websites weigh-in in the
+				megabyte range. My site consits of mostly text with only a few images sprinkled in.</li>
+			<li>Use of Javascript should be limited and only used to enhance the authoring and reading experience.</li>
+		</ul>
+		</p>
+		<p>With those design considerations in mind and a few hours of work, I believe I've come up with a solution.</p>
+		<p>For content creation, the following pattern is used.<br>
+		<ul>
+			<li>All content goes inside <code>&lt;section&gt;</code> tags</li>
+			<li>If it's a blog post I'm adding, I tag the section with a post class:
+				<code>&lt;section class=&quot;post&quot;&gt;</code>. Sections that do not use this class do not receive any Javascript enhancements detailed below.</li>
+			<li>Blog style posts have a <code>&lt;h1&gt;</code> and <code>&lt;time&gt;</code> tag within them.</li>
+
+		</ul>
+		</p>
+		<p>By following the pattern outlined above, I was then able to use Javascript to consistently enhance blog-style
+			posts:
+		<ul>
+			<li>Content within <code>&lt;section class=&quot;post&quot;&gt;</code> tags get automatically converted into
+				<code>&lt;details&gt;
+					</code> elements.</li>
+			<li>The contents of the first <code>&lt;h1&gt;</code> encountered are used for the details'
+				<code>&lt;summary&gt;</code></li>
+			<li>If a <code>&lt;time&gt;</code> is present, it will be inserted before the title of a post in the
+				<code>&lt;summary&gt;</code></li>
+			<li>The <code>&lt;h1&gt;</code> title of each post becomes a link to itself. This allows for linking to
+				specific posts and most browsers will scroll directly to the post content when following this type of
+				link.</li>
+			<li>Convenience buttons are added that can collapse or expand all posts.</li>
+			<li>Posts can be filtered by their content using a simple Javascript search function.</li>
+		</ul>
+		</p>
+		<p>I'm happy with the results so far. As I mentioned above, this entire site is a single page including all
+			styles and Javascript.</p>
+
+
+	</section>
+
+	<section class="post">
+		<h1>A Simple Presentation DSL in Tcl</h1>
+		<p>Posted on <time>2021-10-30</time></p>
+		<h2>Background</h2>
+
+		<p>As I’ve written previously, one of Tcl’s greatest strengths is that it allows for the programmer to define
+			new, first-class constructs in the language. In this post, I’d like to touch upon another one of its
+			strengths: the ability to quickly create Domain Specific Languages.</p>
+
+		<p>Earlier today, I was watching a presentation given by Richard Hipp for the Tcl / Sqlite conference in 2020.
+			In his presentation, he gave the link to his slides. They were just simple HTML pages that linked to one
+			another.</p>
+
+		<p>Recently, I’ve been thinking more and more about Domain Specific Languages, so I figured I’d take a stab at
+			making a DSL that generated HTML pages from "presentation files".</p>
+
+		<p>First, I started by simply writing a presentation in my theoretical DSL, not thinking too hard about the
+			format. My goal was to write using an intuitive language and worry about the implementation later on.</p>
+
+		<p>Example presentation file</p>
+
+		<pre>
+presentation-start
+
+  slide
+    title "A Simple Presentation DSL in Tcl"
+    - "Presented by Christopher Chase."
+    - "October 2021"
+
+  slide
+    title "Tcl"
+    - "Tcl is a dynamic lanugage...."
+
+  slide
+    title "Third page"
+    - "Bullet 1"
+    - "Bullet 2"
+
+presentation-end
+</pre>
+
+		<p>About 30 minutes later (it’d take shorter if I was using Tcl every day, but it’s been a while!), I had a
+			working implementation.</p>
+
+		<h2>Implementation</h2>
+
+		<pre>
+array set presentation {}
+
+proc presentation-start {} {
+        global presentation
+
+        unset presentation
+        array set presentation {}
+        set presentation(started) 1
+        set presentation(slideCount) 0
+}
+
+proc presentation-end {} {
+        global presentation
+
+        # Loop through each of the slides and generate output (e.g. HTML)
+
+        set currSlide 1
+
+        while {$currSlide &lt;= $presentation(slideCount) } {
+
+                set isFirst [expr $currSlide == 1]
+                set hasMore [expr $currSlide &lt;  $presentation(slideCount)]
+                set isLast  [expr $currSlide == $presentation(slideCount)]
+
+
+                # If we're on the first slide, use the title as the directory name
+                if {$isFirst} {
+                        set dirName &quot;$presentation(slide,$currSlide,title)&quot;
+                        file mkdir $dirName
+                        cd $dirName
+                }
+
+                set fh [open $currSlide.html w+]
+
+                puts $fh &quot;&lt;h1&gt;$presentation(slide,$currSlide,title)&lt;/h1&gt;&quot;
+
+                # Loop through each bullet on this slide
+                set currBullet 1
+                while {$currBullet &lt;= $presentation(slide,$currSlide,bulletCount)} {
+                        puts $fh &quot;&lt;p&gt;$presentation(slide,$currSlide,$currBullet,text)&lt;/p&gt;&quot;
+                        incr currBullet
+                }
+
+                if {$isFirst} {
+                        # If currSlide is 1, we only link to next slide.
+                        puts $fh &quot;&lt;a href='[expr $currSlide + 1].html'&gt;Next&lt;/a&gt;&quot;
+                } elseif {$hasMore} {
+                        # If 1 &lt; currSlide &lt; slideCount, we link to prev and next
+                        puts $fh &quot;&lt;a href='[expr $currSlide - 1].html'&gt;Prev&lt;/a&gt;&quot;
+                        puts $fh &quot;&lt;a href='[expr $currSlide + 1].html'&gt;Next&lt;/a&gt;&quot;
+                } elseif {$isLast} {
+                        # If currSlide = slideCount, we link only to prev
+                        puts $fh &quot;&lt;a href='[expr $currSlide - 1].html'&gt;Prev&lt;/a&gt;&quot;
+                }
+
+                flush $fh
+                close $fh
+                incr currSlide
+        }
+
+}
+
+proc slide {} {
+        global presentation
+        set sNum [incr presentation(slideCount)]
+        set  presentation(slide,$sNum,bulletCount) 0
+}
+
+proc title {t} {
+        global presentation
+
+        set sNum $presentation(slideCount)
+        set presentation(slide,$sNum,title) $t
+}
+
+proc - {t} {
+        global presentation
+        set sNum $presentation(slideCount)
+        set bNum [incr presentation(slide,$sNum,bulletCount)]
+        set presentation(slide,$sNum,$bNum,text) $t
+}
+</pre>
+
+		<p>The above code, less than 100 lines, reads a presentation file, and for each presentation, creates a new
+			directory and then for each slide of the presentation, creates a new HTML file that links to the previous or
+			next slide (depending on what page is being rendered.)</p>
+	</section>
+
+
+	<section class="post">
+		<h1>Defining <i>until</i> in Tcl</h1>
+		<p>Posted on <time>2015-09-21</time></p>
+		<h2>Background</h2>
+		<p>One of Tcl’s greatest strengths is the ability for
+			the programmer to seamlessly create new control structures.
+			In this example, we will define a new control structure called <code>until</code>.
+			Until takes two parameters: the first is a test condidtion and the
+			second is a script to run while the condition is not true. For example,
+			if we wished to print all numbers from 1 to 10, we could write the
+			following:</p>
+		<pre>until {$i == 10} {puts $i; incr i 1}</pre>
+		<p>This of course assumes that the variable <i>i</i> has already been initialized to some number.</p>
+		<h2>Implementation</h2>
+		<p>The first iteration and simplest form of our control structure, in pseudo-code, is as follows:</p>
+		<pre>
+(1) Take the given test condition and run it in the caller’s scope.
+
+(2) If the test is untrue
+
+	(3) Take the given script and run it in the caller’s scope
+
+	(4) Return to #1
+				</pre>
+		<p>
+			Our first attempt at the code:
+		</p>
+		<pre>
+proc until {test body} {
+	# We run the test in the caller’s scope, but check its return value in this scope
+	if { ! [uplevel 1 $test] } {
+		uplevel 1 $body
+	}
+}
+				</pre>
+		<p>Testing our procedure gives the following output:</p>
+		<pre>
+set i 1
+until {expr {$i == 10}} {puts $i; incr i 1}
+> 1
+> 2
+		</pre>
+		<p>We get two values back. The first, "1" is from our body-script’s put statement. The second, "2" is the return value of the incr command.
+
+			Now that we’re sure our <code>until</code> control structure’s process flow works for a single iteration,
+			 we’ll modify it to run in a loop-like fasion. We do this by
+			  simply replacing the inner if-statement with the built in <code>while</code> command:</p>
+			  <pre>
+proc until {test body} {
+	# We run the test in the caller’s scope, but check its return value in this scope
+	while { ! [uplevel 1 $test] } {
+		uplevel 1 $body
+	}
+}
+			  </pre>
+			  <p>Again, we test:</p>
+			  <pre>
+set i 1
+until {expr {$i == 10}} {puts $i; incr i 1}
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+> 7
+> 8
+> 9
+			  </pre>
+			  <p>We have one additional step which is to clean up the call signature to until:</p>
+			  <pre>
+until {expr {$i == 10}} {puts $i; incr i 1}
+			  </pre>
+			  <p>will become:</p>
+			  <pre>
+until {$i == 10} {puts $i; incr i 1}
+			  </pre>
+			  <p>To make this change, we move the call to expr from the test expression into our procedure:</p>
+			  <pre>
+proc until {test body} {
+	# We run the test in the caller’s scope, but check its return value in this scope
+	while { ! [uplevel 1 {expr $test}] } {
+		uplevel 1 $body
+	}
+}
+			  </pre>
+			  <p>Calling our procedure, we get the following:</p>
+			  <pre>
+until {$i == 10} {puts $i; incr i 1}
+				> can't read "test": no such variable</pre>
+				<p>The reason for this is because the uplevel call in our while loop runs the literal form <code>{expr $test}</code> instead of the expanded form <code>{expr {$i == 10}}</code>. This is due to the use of curly-braces.</p>
+				<p>If we replace the braces with quotes instead:</p>
+				<pre>
+proc until {test body} {
+	# We run the test in the caller’s scope, but check its return value in this scope
+	while { ! [uplevel 1 “expr $test”] } {
+		uplevel 1 $body
+	}
+}	
+				</pre>
+				<p>We get another error:</p>
+				<pre>
+until {$i == 10} {puts $i; incr i 1}
+>invalid command name "“{expr"
+				</pre>
+				<p>The solution is actually much simpler than using braces or quotes. Uplevel concatenates all arguments together into a single list, and then performs its operation. That means we can do the following:</p>
+				<pre>
+proc until {test body} {
+	# We run the test in the caller’s scope, but check its return value in this scope
+	while { ! [uplevel 1 expr $test] } {
+		uplevel 1 $body
+	}
+}
+				</pre>
+	</section>
+
+
+	<section class="post">
+		<h1>Making an LED light writer</h1>
+		<p>Posted on <time>2013-01-06</time></p>
+
+		<img src="img/chrischase.net-cropped.jpg">
+		<p>Back in October, a friend of mine sent me a 
+			link to a <a href="http://www.reddit.com/r/pics/comments/112sp2/i_built_this_tiny_programmable_handheld_device/">reddit post</a> where the user austron was showing off an LED light writer he had built. I thought it would be fun to recreate this project using an Arduino.</p>
+		<p>The first step was to wire up some LEDs on a breadboard and get them connected to the Arduino. I forget exactly why I chose to use 8 LEDs, but it seemed like a good number at the time. As I show later, it turned out to be a good choice. Below is a picture of the breadboard and Arduino. In case it’s not clear what’s going on, take a look at the accompanying schematic.</p>
+		<img src="img/led-light-writer.jpg">
+		<img src="img/led-light-writer_schem.png" width="768px">
+		<p>There’s nothing special about the digital pins I used. If you wish to create this project yourself using the code I provide, you’ll need to use 8 pins that are sequential.</p>
+		<p>Since the light writer consists of a single column of eight rows, each character that will be displayed needs to be sliced up. Below are two of the many ways in which the letter C can be split up. I chose to go with the one on the left. (Red squares represent lit LEDs, and white squares are unlit LEDs.)</p>
+		<img src="img/led_letter_c1.png" style="float: left">
+		<img src="img/led_letter_c2.png">
+		<p>After splitting letters up, they can be easily represented in the Arduino sketch. During the fist iteration of my code, I did everything manually:</p>
+		<script src="https://gist.github.com/cchase88/4422684.js"></script>
+		<p>It’s a pain to have to write out all that code for a simple message. And what if I wanted to display a different message? I would need to copy and paste and rearrange, and end up with a big mess. Making a function for each character would eliminate some of this mess:</p>
+		<script src="https://gist.github.com/cchase88/4423053.js"></script>
+		<p>If I had done this for every character, I could display the word “hello” by typing:</p>
+		<pre>h(); e(); l(); l(); o();</pre>
+		<p>Being able to quickly call a single function is convenient, but writing out each column of each letter like I did for the C is not. If you go back and count, you’ll notice that I had to use digitalWrite() 18 times just to represent the letter C. If I had continued to do this with every letter, that would have been a lot of code!</p>
+		<p>Instead of wasting time typing that all out, I began to think of a compact way in which I could represent an entire column at once. A byte seemed to be perfect. It holds 8 bits, and each bit represents an on-off state. I had 8 LEDs, and each LED is either on or off. Now, Instead of a single line representing a single LED state, it could represent an entire column’s state! The picture below helps visualize how the letter is represented using bytes:</p>
+		<img src="img/c_bytes.png">
+		<p>I created the function lightUp which takes one of these bytes and turns on the corresponding LEDs. As I mentioned earlier, it doesn’t matter what digital pins are used, so long as they’re sequential. The loop in in the lightUp function is the reason for this.</p>
+		<script src="https://gist.github.com/cchase88/4436267.js"></script>
+		<p>After converting entire columns to bytes and creating the lightUp function, the letter C could now be represented by this code:</p>
+		<script src="https://gist.github.com/cchase88/4438588.js"></script>
+		<p>5 lines instead of 18. Not bad! This could be made even more compact by having the lightUp function work on an array of bytes.</p>
+		<p>To further reduce the amount of code, I decided to store the message as a string. A loop could then be used to iterate over each character in the string, and that letter’s corresponding function called:</p>
+		<script src="https://gist.github.com/cchase88/4438717.js"></script>
+		<p>After adjusting the time delays between individual characters and words, I was able to come up with some decent results:</p>
+		<img src="img/CIMG2839-1024x768.jpg"  width="768px">
+		<img src="img/CIMG2842.jpg"  width="768px">
+		<img src="img/CIMG2843.jpg"  width="768px">
+		<img src="img/alphabet-crop.jpg"  width="768px">
+		<p>Here’s a link to the full Arduino sketch file: <a href="https://gist.github.com/83156afded367c106bb7">https://gist.github.com/83156afded367c106bb7</a></p>
+		
+
+
+
+	</section>
+
+
+
+
+	<section>
+		<a href="#top">Return to top</a>
+	</section>
+
+</body>
+
+</html>
